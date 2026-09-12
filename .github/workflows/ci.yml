@@ -1,12 +1,18 @@
-name: Enterprise MMM CI
+name: Enterprise MMM CI/CD
 
 on:
   push:
     branches:
       - main
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
-  build:
+
+  test:
+    name: CI - Test
     runs-on: ubuntu-latest
 
     steps:
@@ -26,5 +32,63 @@ jobs:
       - name: Verify Python Installation
         run: python --version
 
+      - name: Verify Project Files
+        run: |
+          test -f app/main.py
+          test -f app/model.py
+          test -f app/preprocessing.py
+          test -f app/transformations.py
+          test -f dockerfile
+
       - name: Workflow Completed
-        run: echo "CI Pipeline Executed Successfully!"
+        run: echo "CI checks completed successfully!"
+
+
+  deploy:
+    name: CD - Build and Deploy
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Docker Image
+        run: |
+          docker build \
+            -f dockerfile \
+            -t khushi1928/enterprise-mmm-api:${{ github.sha }} \
+            -t khushi1928/enterprise-mmm-api:latest \
+            .
+
+      - name: Push Docker Image
+        run: |
+          docker push khushi1928/enterprise-mmm-api:${{ github.sha }}
+          docker push khushi1928/enterprise-mmm-api:latest
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy enterprise-mmm-api \
+            --image=docker.io/khushi1928/enterprise-mmm-api:${{ github.sha }} \
+            --region=europe-west1 \
+            --project=${{ secrets.GCP_PROJECT_ID }} \
+            --platform=managed \
+            --allow-unauthenticated
+
+      - name: Deployment Completed
+        run: echo "MMM API deployed successfully to Cloud Run!"
