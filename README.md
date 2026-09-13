@@ -109,9 +109,63 @@ A FastAPI application was created to serve the trained MMM model.
 
 The API provides a `/predict` endpoint that takes marketing and business inputs and returns predicted sales.
 
-Example response:
+Example response: {"predicted_sales": 13512.27}
 
-```json
-{
-  "predicted_sales": 13512.27
-}
+The API documentation is available through Swagger UI using the `/docs` endpoint.
+
+## Docker
+
+The API is packaged into a Docker container.
+
+Docker is used so that the application and its required Python dependencies can run in a consistent environment.
+
+## CI/CD
+
+GitHub Actions is used for the CI/CD pipeline.
+
+The deployment workflow performs these steps:
+
+1. Install Python dependencies
+2. Check the project files
+3. Build the Docker image
+4. Push the Docker image to Docker Hub
+5. Authenticate with Google Cloud
+6. Deploy the application to Google Cloud Run
+
+## Cloud Deployment
+
+The FastAPI application is deployed on Google Cloud Run.
+
+The application is publicly accessible through the Cloud Run URL.
+
+The deployment uses GitHub Actions and Google Cloud Workload Identity Federation for authentication.
+
+## Tools and Technologies
+
+- Python
+- Pandas
+- NumPy
+- Matplotlib
+- Seaborn
+- PyMC
+- ArviZ
+- Scikit-learn
+- SciPy
+- FastAPI
+- Docker
+- Docker Hub
+- Git
+- GitHub
+- GitHub Actions
+- Google Cloud Run
+- Power BI
+
+## Project Outcome
+
+The project helps estimate the contribution of different marketing channels and understand their effect on sales.
+
+It also provides budget allocation insights and a prediction API that can be used for different marketing scenarios.
+
+## Author
+
+Khushi Gupta
