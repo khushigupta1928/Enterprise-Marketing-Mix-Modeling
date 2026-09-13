@@ -7,3 +7,4 @@ arviz
 scikit-learn
 scipy
 joblib
+netCDF4
